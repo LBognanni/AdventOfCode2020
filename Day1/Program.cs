@@ -6,22 +6,29 @@ namespace Day1
 {
     class Program
     {
-        static IEnumerable<long> FindNumbers(long numberOfNumbers, long sum, IEnumerable<long> numbers)
+        static IEnumerable<long> FindNumbers(int numberOfNumbers, long sum, IEnumerable<long> numbers)
         {
-            var ordered = numbers.OrderBy(u => u).ToArray();
-
-            for (long i = 0; i < ordered.Length / 2; ++i)
+            foreach(var number in numbers)
             {
-                for (long j = ordered.Length - 1; j > ordered.Length / 2; --j)
+                var remaining = sum - number;
+                if(numberOfNumbers == 2)
                 {
-                    if (ordered[i] + ordered[j] == 2020)
+                    if(numbers.Contains(remaining))
                     {
-                        return new[] { ordered[i], ordered[j] };
+                        return new[] { number, remaining };
+                    }
+                }
+                else
+                {
+                    var others = FindNumbers(numberOfNumbers - 1, remaining, numbers.Where(n => n != number));
+                    if(others.Any())
+                    {
+                        return others.Union(new[] { number });
                     }
                 }
             }
 
-            throw new Exception("No pair found :(");
+            return Array.Empty<long>();
         }
 
         static void Main(string[] args)
@@ -71,8 +78,12 @@ namespace Day1
 
             var numbers = FindNumbers(2, 2020, arr);
 
-            Console.WriteLine($"{ string.Join(" + ", numbers) } = 2020. { string.Join(" * ", numbers) } is { numbers.Aggregate((last, cur) => last * cur) }");
-            
+            Console.WriteLine($"2x: { string.Join(" + ", numbers) } = 2020. { string.Join(" * ", numbers) } is { numbers.Aggregate((last, cur) => last * cur) }");
+
+            numbers = FindNumbers(3, 2020, arr);
+
+            Console.WriteLine($"3x: { string.Join(" + ", numbers) } = 2020. { string.Join(" * ", numbers) } is { numbers.Aggregate((last, cur) => last * cur) }");
+
         }
     }
 }
