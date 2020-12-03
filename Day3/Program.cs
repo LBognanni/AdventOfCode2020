@@ -10,7 +10,11 @@ namespace Day3
         {
             var map = LoadMap("input.txt");
 
-            int numberOfTrees = Traverse(map, 1, 3);
+            long numberOfTrees = Traverse(map, 1, 1) *
+                                 Traverse(map, 1, 3) *
+                                 Traverse(map, 1, 5) *
+                                 Traverse(map, 1, 7) *
+                                 Traverse(map, 2, 1);
 
             Console.WriteLine($"{numberOfTrees} trees encountered.");
         }
