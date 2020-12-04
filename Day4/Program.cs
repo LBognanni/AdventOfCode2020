@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Day4
 {
@@ -14,20 +15,20 @@ namespace Day4
             int validPassports = 0;
             int currentPassportFields = 0;
 
-            string[] requiredFields = new[]
+            var requiredFields = new Dictionary<string, Func<string, bool>>
             {
-                "byr",
-                "iyr",
-                "eyr",
-                "hgt",
-                "hcl",
-                "ecl",
-                "pid",
+                ["byr"] = (s) => NumberBetween(s, 1920, 2002),
+                ["iyr"] = (s) => NumberBetween(s, 2010, 2020),
+                ["eyr"] = (s) => NumberBetween(s, 2020, 2030),
+                ["hgt"] = CheckHeight,
+                ["hcl"] = (s) => Regex.IsMatch(s, @"^#([0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f])$"),
+                ["ecl"] = (s) => Regex.IsMatch(s, @"^(amb|blu|brn|gry|grn|hzl|oth)$"),
+                ["pid"] = (s) => Regex.IsMatch(s, @"^([0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])$"),
             };
 
             void UpdateCount()
             {
-                if (currentPassportFields == requiredFields.Length)
+                if (currentPassportFields == requiredFields.Count)
                 {
                     validPassports++;
                 }
@@ -44,16 +45,41 @@ namespace Day4
                 var fieldsAndValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 foreach(var fieldWithValue in fieldsAndValues)
                 {
-                    var split = fieldWithValue.Split(':', StringSplitOptions.RemoveEmptyEntries);
-                    if(requiredFields.Contains(split[0]))
+                    var kvp = fieldWithValue.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                    if(requiredFields.ContainsKey(kvp[0]))
                     {
-                        currentPassportFields++;
+                        if (requiredFields[kvp[0]](kvp[1]))
+                        {
+                            currentPassportFields++;
+                        }
                     }
                 }
             }
             UpdateCount();
 
             return validPassports;
+        }
+
+        private static bool CheckHeight(string s)
+        {
+            if(s.EndsWith("in"))
+            {
+                return NumberBetween(s.Remove(s.Length - 2, 2), 59, 76);
+            }
+            else if(s.EndsWith("cm"))
+            {
+                return NumberBetween(s.Remove(s.Length - 2, 2), 150, 193);
+            }
+            return false;
+        }
+
+        private static bool NumberBetween(string s, int min, int max)
+        {
+            if(int.TryParse(s, out int num))
+            {
+                return num >= min && num <= max;
+            }
+            return false;
         }
 
         static void Main(string[] args)
