@@ -57,9 +57,29 @@ namespace Day5
                 }
             }
 
-            var step1Result = File.ReadAllLines("input.txt").Select(l => RowId(DecodeBoardingPass(l))).Max();
+            var seats = File.ReadAllLines("input.txt").Select(l => RowId(DecodeBoardingPass(l))).ToList();
+            var step1Result = seats.Max();
             Console.WriteLine($"Step 1 result is {step1Result}");
 
+            var freeSeats = Enumerable.Range(0, 128 * 8).Where(seat => !seats.Contains(seat)).ToArray();
+            var mySeat = FindMySeat(freeSeats);
+            Console.WriteLine($"My seat is one of { String.Join(", ", freeSeats)}");
+            Console.WriteLine($"My seat is { FindMySeat(freeSeats) }");
+
+
+        }
+
+        private static int FindMySeat(int[] freeSeats)
+        {
+            int lastSeat = 0;
+            foreach(var seat in freeSeats)
+            {
+                if (seat > (lastSeat + 1))
+                    return seat;
+                lastSeat = seat;
+            }
+
+            return -1;
         }
     }
 }
