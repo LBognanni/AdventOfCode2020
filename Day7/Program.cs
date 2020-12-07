@@ -16,6 +16,15 @@ namespace Day7
             var rules = ReadRules().ToArray();
             var combinations = FindCombinations(rules, "shiny gold").Distinct().Count();
             Console.WriteLine($"Part 1: Found {combinations} combinations.");
+
+            var innerBags = FindInnerBags(rules, "shiny gold");
+            Console.WriteLine($"Part 2: a shiny gold bag must contain {innerBags} other bags.");
+        }
+
+        private static int FindInnerBags(Rule[] rules, string color)
+        {
+            var innerBags = rules.First(r => r.Color == color).SubRules;
+            return innerBags.Select(b => b.Quantity + b.Quantity * FindInnerBags(rules, b.Color)).Sum();
         }
 
         private static IEnumerable<string> FindCombinations(Rule[] rules, params string[] find)
@@ -37,15 +46,15 @@ namespace Day7
 
             foreach (var line in lines)
             {
-                var split1 = line.Split(" contain ", StringSplitOptions.RemoveEmptyEntries);
-                var container = bagNameRegx.Match(split1[0]).Groups["color"].Value;
-                if (split1[1].Equals("no other bags."))
+                var split = line.Split(" contain ", StringSplitOptions.RemoveEmptyEntries);
+                var container = bagNameRegx.Match(split[0]).Groups["color"].Value;
+                if (split[1].Equals("no other bags."))
                 {
                     yield return new Rule(container, Array.Empty<SubRule>());
                     continue;
                 }
 
-                var contained = split1[1].Split(", ");
+                var contained = split[1].Split(", ");
                 
                 var subRules = new List<SubRule>();
                 foreach(var s in contained)
