@@ -14,6 +14,36 @@ namespace Day9
             var notSum = FindNotSum(numbers, 0);
 
             Console.WriteLine($"Part 1: First number that is not a sum: {notSum}");
+
+            var encriptionKey = FindEncryptionKey(numbers, notSum);
+
+            Console.WriteLine($"Part 2: The encryption key is: {encriptionKey}");
+        }
+
+        private static long FindEncryptionKey(long[] numbers, long notSum)
+        {
+            for (int i = 0; i < numbers.Length; ++i)
+            {
+                int j = i + 1;
+                var acc = numbers[i];
+
+                for (; j < numbers.Length; ++j)
+                {
+                    acc += numbers[j];
+                    if (acc >= notSum)
+                    {
+                        break;
+                    }
+                }
+
+                if (acc == notSum)
+                {
+                    var subset = numbers.Skip(i).Take(j - i);
+                    return subset.Min() + subset.Max();
+                }
+            }
+
+            return -1;
         }
 
         private static long FindNotSum(long[] numbers, int idx)
