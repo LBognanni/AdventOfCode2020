@@ -82,31 +82,21 @@ namespace Day12
                 ['E'] = (f, d) => (f with { WayX = f.WayX + d }),
                 ['W'] = (f, d) => (f with { WayX = f.WayX - d }),
                 ['S'] = (f, d) => (f with { WayY = f.WayY + d }),
+                ['F'] = (f, d) => f with { X = f.X + (f.WayX * d), Y = f.Y + (f.WayY * d) },
+                ['B'] = (f, d) => f with { X = f.X + (f.WayX * d), Y = f.Y + (f.WayY * d) },
+                ['L'] = (f, d) => RotateWaypointLeft(f, d),
+                ['R'] = (f, d) => RotateWaypointRight(f, d),
             };
 
-            public Ferry ApplyV2(Ferry ferry)
+            public Ferry ApplyWithWaypoint(Ferry ferry)
             {
                 if (waypointMoves.ContainsKey(Action))
                     return waypointMoves[Action](ferry, Value);
-
-                switch (Action)
-                {
-                    case 'F':
-                        return ferry with { X = ferry.X + (ferry.WayX * Value), Y = ferry.Y + (ferry.WayY * Value) };
-                    case 'B':
-                        return ferry with { X = ferry.X - (ferry.WayX * Value), Y = ferry.Y - (ferry.WayY * Value) };
-                    case 'L':
-                        return RotateWaypointLeft(ferry);
-                    case 'R':
-                        return RotateWaypointRight(ferry);
-                }
-
                 return ferry;
             }
 
-            private Ferry RotateWaypointLeft(Ferry ferry)
+            private static Ferry RotateWaypointLeft(Ferry ferry, int value)
             {
-                int value = Value;
                 while (value > 0)
                 {
                     ferry = ferry with { WayX = ferry.WayY, WayY = -ferry.WayX };
@@ -114,10 +104,8 @@ namespace Day12
                 }
                 return ferry;
             }
-            private Ferry RotateWaypointRight(Ferry ferry)
+            private static Ferry RotateWaypointRight(Ferry ferry, int value)
             {
-
-                int value = Value;
                 while (value > 0)
                 {
                     ferry = ferry with { WayX = -ferry.WayY, WayY = ferry.WayX };
@@ -145,7 +133,7 @@ namespace Day12
 
             foreach (var command in input)
             {
-                ferry = command.ApplyV2(ferry);
+                ferry = command.ApplyWithWaypoint(ferry);
             }
 
             Console.WriteLine($"Part 2: Ferry is at {ferry.X}, {ferry.Y}. The Manhattan distance is { ferry.Distance }");
