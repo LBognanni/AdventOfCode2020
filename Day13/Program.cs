@@ -16,7 +16,6 @@ namespace Day13
 
             var timestamp = Part2(input[1]);
             Console.WriteLine($"Part 2: The answer is {timestamp}");
-
         }
 
         private static int Part1(string[] input)
@@ -38,6 +37,7 @@ namespace Day13
             }
             return (inc, b);
         }
+
         private static ulong Part2(string busTable)
         {
             var busses = busTable.Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
