@@ -27,11 +27,69 @@ namespace Day14
         static void Main(string[] args)
         {
             var instructions = File.ReadAllLines("input.txt").Select(Instruction.Parse).ToArray();
-            //var instructions = "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X\nmem[8] = 11\nmem[7] = 101\nmem[8] = 0".Split('\n').Select(Instruction.Parse).ToArray();
-
-
+            
             var result = RunInstructions(instructions);
             Console.WriteLine($"Part 1: The sum is {result}");
+
+            result = RunInstructionsV2(instructions);
+            Console.WriteLine($"Part 2: The sum is {result}");
+
+        }
+
+        private static long RunInstructionsV2(Instruction[] instructions)
+        {
+            var mem = new Dictionary<long, long>();
+            string mask = "0";
+
+            foreach(var instruction in instructions)
+            {
+                if (instruction.Type == "mask")
+                {
+                    mask = instruction.Value;
+                }
+                else
+                {
+                    foreach (var addr in GetAddresses(mask, instruction.Address))
+                    {
+                        mem[addr] = long.Parse(instruction.Value);
+                    }
+                }
+            }
+
+            return mem.Values.Sum();
+        }
+
+        private static IEnumerable<long> GetAddresses(string template, long startAddr)
+        {
+            foreach (var mask in EnumerateMasks(template.Replace('0', 'O')))
+            {
+                var or = Convert.ToInt64(mask.Replace('O', '0'), 2);
+                var and = Convert.ToInt64(mask.Replace('O', '1'), 2);
+                yield return (startAddr | or) & and;
+            }
+        }
+
+        private static IEnumerable<string> EnumerateMasks(string mask)
+        {
+            var i = mask.IndexOf('X');
+            if (i < 0)
+            {
+                yield return mask;
+            }
+            else
+            {
+                var with0 = mask[..i] + "0" + mask[(i + 1)..];
+                foreach (var combination in EnumerateMasks(with0))
+                {
+                    yield return combination;
+                }
+
+                var with1 = mask[..i] + "1" + mask[(i + 1)..];
+                foreach (var combination in EnumerateMasks(with1))
+                {
+                    yield return combination;
+                }
+            }
         }
 
         private static long RunInstructions(Instruction[] instructions)
