@@ -12,22 +12,29 @@ namespace Day15
 
             var result = EnumerateNumbers(input).Skip(2019).First();
             Console.WriteLine($"Part 1: The 2020th number is {result}");
+           
+            var resultPt2 = EnumerateNumbers(input).Skip(30000000-1).First();
+            Console.WriteLine($"Part 2: The 2020th number is {resultPt2}");
         }
 
         private static IEnumerable<int> EnumerateNumbers(int[] seed)
         {
-            var previousNumbers = new List<int>(seed[..^1]);
+            int turn = 1;
+            var lastSeen = new Dictionary<int, int>();
             var nextNumber = seed[^1];
 
-            foreach(var number in seed)
+            foreach(var number in seed[..^1])
             {
+                lastSeen[number] = turn;
+                turn++; 
                 yield return number;
             }
+            yield return nextNumber;
 
             while(true)
             {
-                var index = previousNumbers.LastIndexOf(nextNumber) + 1;
-                previousNumbers.Add(nextNumber);
+                lastSeen.TryGetValue(nextNumber, out int index);
+                lastSeen[nextNumber] = turn;
 
                 if (index == 0)
                 {
@@ -35,10 +42,11 @@ namespace Day15
                 }
                 else
                 {
-                    nextNumber = previousNumbers.Count - index;
+                    nextNumber = turn - index;
                 }
 
                 yield return nextNumber;
+                turn++;
             }
         }
     }
