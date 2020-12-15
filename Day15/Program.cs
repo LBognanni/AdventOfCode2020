@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Day15
@@ -12,9 +13,12 @@ namespace Day15
 
             var result = EnumerateNumbers(input).Skip(2019).First();
             Console.WriteLine($"Part 1: The 2020th number is {result}");
-           
+
+            var sw = new Stopwatch();
+            sw.Start();
             var resultPt2 = EnumerateNumbers(input).Skip(30000000-1).First();
-            Console.WriteLine($"Part 2: The 2020th number is {resultPt2}");
+            sw.Stop();
+            Console.WriteLine($"Part 2: The 30000000th number is {resultPt2} (and it took {sw.ElapsedMilliseconds}ms to run)");
         }
 
         private static IEnumerable<int> EnumerateNumbers(int[] seed)
