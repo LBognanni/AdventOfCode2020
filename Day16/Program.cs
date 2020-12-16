@@ -25,28 +25,72 @@ namespace Day16
         {
             var (rules, myTicket, otherTickets) = ParseFile(File.ReadAllLines("input.txt"));
 
-            Console.WriteLine($"{rules.Count()} rules, myticket has {myTicket.Length} fields, {otherTickets.Count()} other tickets");
             var invalid = FindInvalidValues(rules, otherTickets);
 
             Console.WriteLine($"Part 1: The result is {invalid.Sum()}");
+
+            var validTickets = FindValidTickets(rules, otherTickets).ToArray();
+            var mappings = FindColumnMappings(validTickets, rules);
+
+            var myValues = mappings.Where(m => m.Key.StartsWith("departure")).Select(m => (long)myTicket[m.Value]);
+            Console.WriteLine($"Part 2: The result is {myValues.Aggregate((acc, cur) => acc * cur)}");
+        }
+
+        private static IReadOnlyDictionary<string, int> FindColumnMappings(IEnumerable<int[]> validTickets, IEnumerable<Rule> rules)
+        {
+            var validMappings = new List<(string field, int index)>();
+
+            for (int i = 0; i < validTickets.First().Length; ++i)
+            {
+                foreach (var rule in rules)
+                {
+                    if (validTickets.All(t => rule.Accepts(t[i])))
+                    {
+                        validMappings.Add((rule.Field, i));
+                    }
+                }
+
+            }
+
+            var mappings = new Dictionary<string, int>();
+            foreach (var group in validMappings.GroupBy(m => m.index).OrderBy(g => g.Count()))
+            {
+                var validField = group.FirstOrDefault(f => !mappings.ContainsKey(f.field));
+                if (validField != default)
+                {
+                    mappings.Add(validField.field, validField.index);
+                }
+            }
+            return mappings;
+        }
+
+        private static IEnumerable<int[]> FindValidTickets(IEnumerable<Rule> rules, IEnumerable<int[]> tickets)
+        {
+            foreach (var ticket in tickets)
+            {
+                bool isValid = true;
+                foreach (var number in ticket)
+                {
+                    if(!rules.Any(r=>r.Accepts(number)))
+                    {
+                        isValid = false;
+                        break;
+                    }
+                }
+                if(isValid)
+                {
+                    yield return ticket;
+                }
+            }
         }
 
         private static IEnumerable<int> FindInvalidValues(IEnumerable<Rule> rules, IEnumerable<int[]> otherTickets)
         {
-            foreach(var ticket in otherTickets)
+            foreach (var ticket in otherTickets)
             {
-                foreach(var number in ticket)
+                foreach (var number in ticket)
                 {
-                    bool found = false;
-                    foreach(var rule in rules)
-                    {
-                        if(rule.Accepts(number))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(!found)
+                    if (rules.All(r => !r.Accepts(number)))
                     {
                         yield return number;
                     }
