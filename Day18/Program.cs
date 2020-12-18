@@ -15,7 +15,7 @@ namespace Day18
             Verify(23340, "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2");
 
             var result = File.ReadAllLines("input.txt").Select(RunFormula).Sum();
-            Console.WriteLine($"Part 1: The result is {result}");
+            Console.WriteLine($"Part 2: The result is {result}");
         }
 
         private static void Verify(long expected, string formula)
@@ -33,7 +33,6 @@ namespace Day18
 
         static long RunFormula(string formula, int t=0)
         {
-            //Console.WriteLine($"{new String('\t', t)}Running: '{formula}'");
             long acc = 0;
             char op = ' ';
 
