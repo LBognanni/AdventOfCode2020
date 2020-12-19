@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Day19
@@ -12,11 +13,19 @@ namespace Day19
         {
             var (rules, lines) = ExtractRules(File.ReadAllLines("input.txt"));
             var rulesDictionary = rules.ToDictionary(r => r.Id);
-            
-            var regex = new Regex("^" + rulesDictionary[0].ToString(rulesDictionary) + "$");
 
+            var regex = new Regex("^" + rulesDictionary[0].ToString(rulesDictionary) + "$");
             var count = lines.Count(regex.IsMatch);
             Console.WriteLine($"Part 1: {count} lines match rule 0.");
+
+            //--------
+
+            rulesDictionary[8] = new OrRules(8, new ReferenceRule(-1, new[] { 42 }), new ReferenceRule(-1, new[] { 42, 8 }));
+            rulesDictionary[11] = new OrRules(11, new ReferenceRule(-1, new[] { 42, 31 }), new ReferenceRule(-1, new[] { 42, 11, 31}));
+
+            regex = new Regex("^" + rulesDictionary[0].ToString(rulesDictionary) + "$");
+            count = lines.Count(regex.IsMatch);
+            Console.WriteLine($"Part 2: {count} lines match rule 0.");
         }
 
         abstract class Rule
@@ -52,7 +61,24 @@ namespace Day19
                 RuleIds = ruleIds;
             }
 
-            public override string ToString(IReadOnlyDictionary<int, Rule> rules) => String.Join("", RuleIds.Select(r => rules[r].ToString(rules)));
+            static Stack<int> SeenRuleIds = new Stack<int>();
+
+            public override string ToString(IReadOnlyDictionary<int, Rule> rules)
+            {
+                var sb = new StringBuilder();
+
+                foreach (var rule in RuleIds.Select(id=>rules[id]))
+                {
+                    if (SeenRuleIds.Count(r => r == rule.Id) > 20)
+                        continue;
+
+                    SeenRuleIds.Push(rule.Id);
+                    sb.Append(rule.ToString(rules));
+                    SeenRuleIds.Pop();
+                }
+
+                return sb.ToString();
+            }
         }
 
         class OrRules : Rule
