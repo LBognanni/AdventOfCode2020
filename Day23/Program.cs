@@ -8,19 +8,86 @@ namespace Day23
     {
         static void Main(string[] args)
         {
-            //var arr = new List<int> { 3, 8, 9, 1, 2, 5, 4, 6, 7 };
-            var arr = new List<int> { 6,1,4,7,5,2,8,3,9 };
-            for(int i=0;i<100;++i)
+            var arr = new List<long> { 6, 1, 4, 7, 5, 2, 8, 3, 9 };
+
+            for (int i = 0; i < 100; ++i)
             {
                 arr = Play(arr, i);
             }
 
             Console.WriteLine($"Part 1: {String.Join("", ShiftList(arr))}");
+
+            
+            var (dict, list) = GenerateLinkedList(new long[] { 6, 1, 4, 7, 5, 2, 8, 3, 9 }, 1000000);
+            for (long i = 0; i < 10000000; ++i)
+            {
+                PlayV2(dict, list, 1000000);
+            }
+            Console.WriteLine($"Part 2: the result is {dict[1].Next.Value * dict[1].Next.Next.Value}");
         }
 
-        private static List<int> Play(List<int> arr, int current)
+        private static void PlayV2(IReadOnlyDictionary<long, LinkedListNode<long>> dict, LinkedList<long> list, long maxNumber)
         {
-            var newList = new List<int>(arr.Count);
+            var current = list.First;
+            var nextThree = new Queue<LinkedListNode<long>>();
+            nextThree.Enqueue(current.Next);
+            nextThree.Enqueue(current.Next.Next);
+            nextThree.Enqueue(current.Next.Next.Next);
+            
+            foreach(var node in nextThree)
+            {
+                list.Remove(node);
+            }
+
+            var destinationNumber = current.Value - 1;
+            if (destinationNumber == 0)
+            {
+                destinationNumber = maxNumber;
+            }
+            while (nextThree.Any(x=>x.Value == destinationNumber))
+            {
+                destinationNumber--;
+                if(destinationNumber == 0)
+                {
+                    destinationNumber = maxNumber;
+                }
+            }
+
+            var addAfter = dict[destinationNumber];
+            while(nextThree.Any())
+            {
+                var next = nextThree.Dequeue();
+                list.AddAfter(addAfter, next);
+                addAfter = next;
+            }
+
+            list.Remove(current);
+            list.AddLast(current);
+        }
+
+
+        private static (IReadOnlyDictionary<long, LinkedListNode<long>>, LinkedList<long>) GenerateLinkedList(IEnumerable<long> seed, long maxNumber)
+        {
+            var dict = new Dictionary<long, LinkedListNode<long>>();
+            var list = new LinkedList<long>();
+            var max = seed.Max();
+
+            foreach(var i in seed)
+            {
+                dict.Add(i, list.AddLast(i));
+            }
+
+            for (long i = max + 1; i <= maxNumber; ++i)
+            {
+                dict.Add(i, list.AddLast(i));
+            }
+
+            return (dict, list);
+        }
+
+        private static List<long> Play(List<long> arr, int current)
+        {
+            var newList = new List<long>(arr.Count);
             current = current % arr.Count;
 
             if (current >= 6)
@@ -50,7 +117,7 @@ namespace Day23
                 newList.Insert(destination + i, arr[(current + i) % arr.Count]);
             }
 
-            int shift = newList.IndexOf(arr[current]) - current;
+            var shift = newList.IndexOf(arr[current]) - current;
             if(shift > 0)
             {
                 newList.AddRange(newList.Take(shift));
@@ -61,9 +128,9 @@ namespace Day23
             return newList;
         }
 
-        static IEnumerable<int> ShiftList(List<int> list)
+        static IEnumerable<long> ShiftList(List<long> list)
         {
-            int shift = list.IndexOf(1);
+            var shift = list.IndexOf(1);
             if (shift > 0)
             {
                 return list.Skip(shift + 1).Union(list.Take(shift));
